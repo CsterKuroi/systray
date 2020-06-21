@@ -1,4 +1,4 @@
-module github.com/getlantern/systray
+module github.com/r10v/systray
 
 go 1.13
 

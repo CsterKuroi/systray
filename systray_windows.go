@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"sync"
 	"syscall"
 	"unsafe"
 
@@ -116,9 +117,12 @@ type notifyIconData struct {
 	InfoFlags                  uint32
 	GuidItem                   windows.GUID
 	BalloonIcon                windows.Handle
+	m                          sync.Mutex
 }
 
 func (nid *notifyIconData) add() error {
+	nid.m.Lock()
+	defer nid.m.Unlock()
 	const NIM_ADD = 0x00000000
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_ADD),
@@ -131,6 +135,9 @@ func (nid *notifyIconData) add() error {
 }
 
 func (nid *notifyIconData) modify() error {
+	nid.m.Lock()
+	defer nid.m.Unlock()
+
 	const NIM_MODIFY = 0x00000001
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_MODIFY),
@@ -211,7 +218,6 @@ func (t *winTray) setIcon(src string) error {
 	t.nid.Icon = h
 	t.nid.Flags |= NIF_ICON
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
-
 	return t.nid.modify()
 }
 
@@ -328,6 +334,7 @@ func (t *winTray) initInstance() error {
 	res, _, err := pRegisterWindowMessage.Call(
 		uintptr(unsafe.Pointer(taskbarEventNamePtr)),
 	)
+
 	t.wmTaskbarCreated = uint32(res)
 
 	t.loadedImages = make(map[string]windows.Handle)
@@ -725,7 +732,6 @@ func registerSystray() {
 		log.Errorf("Unable to create menu: %v", err)
 		return
 	}
-
 }
 
 func nativeLoop() {
