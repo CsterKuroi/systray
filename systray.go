@@ -118,8 +118,24 @@ func AddMenuItem(title string, tooltip string) *MenuItem {
 }
 
 // AddSeparator adds a separator bar to the menu
-func AddSeparator() {
+func AddSeparator()  {
 	addSeparator(atomic.AddInt32(&currentID, 1))
+}
+
+// AddSeparator as MenuItem
+func AddSeparatorAsMenuItem() *MenuItem {
+	itemId := atomic.AddInt32(&currentID, 1)
+	addSeparator(itemId)
+
+	return &MenuItem{
+		ClickedCh: make(chan struct{}),
+		id:        itemId,
+		title:     "",
+		tooltip:   "",
+		disabled:  false,
+		checked:   false,
+		parent:    nil,
+	}
 }
 
 // AddSubMenuItem adds a nested sub-menu item with the designated title and tooltip.
