@@ -99,3 +99,6 @@ func systray_on_exit() {
 func systray_menu_item_selected(cID C.int) {
 	systrayMenuItemSelected(int32(cID))
 }
+
+func showMenu() {
+}

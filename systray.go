@@ -22,6 +22,8 @@ var (
 
 	currentID = int32(-1)
 	quitOnce  sync.Once
+
+	ClickedCh = make(chan struct{})
 )
 
 func init() {
@@ -118,7 +120,7 @@ func AddMenuItem(title string, tooltip string) *MenuItem {
 }
 
 // AddSeparator adds a separator bar to the menu
-func AddSeparator()  {
+func AddSeparator() {
 	addSeparator(atomic.AddInt32(&currentID, 1))
 }
 
@@ -222,5 +224,13 @@ func systrayMenuItemSelected(id int32) {
 	case item.ClickedCh <- struct{}{}:
 	// in case no one waiting for the channel
 	default:
+	}
+}
+
+func systrayIconClicked() {
+	select {
+	case ClickedCh <- struct{}{}:
+	default:
+		showMenu()
 	}
 }
