@@ -124,6 +124,10 @@ func AddSeparator() {
 	addSeparator(atomic.AddInt32(&currentID, 1))
 }
 
+func ShowNotification(title, msg string)  {
+	showNotification(title, msg)
+}
+
 // AddSeparator as MenuItem
 func AddSeparatorAsMenuItem() *MenuItem {
 	itemId := atomic.AddInt32(&currentID, 1)

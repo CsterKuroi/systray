@@ -236,6 +236,14 @@ func (t *winTray) setTooltip(src string) error {
 	return t.nid.modify()
 }
 
+func (t *winTray) setNotification(title, msg string) error {
+	const NIF_INFO = 0x00000010
+	t.nid.Flags = NIF_INFO
+	copy(t.nid.InfoTitle[:], syscall.StringToUTF16(title))
+	copy(t.nid.Info[:], syscall.StringToUTF16(msg))
+	return t.nid.modify()
+}
+
 var wt winTray
 
 // WindowProc callback function that processes messages sent to a window.
@@ -901,4 +909,8 @@ func showMenuItem(item *MenuItem) {
 
 func showMenu() {
 	wt.showMenu()
+}
+
+func showNotification(title, msg string) {
+	wt.setNotification(title, msg)
 }
