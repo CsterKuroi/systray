@@ -19,6 +19,7 @@ import (
 // Helpful sources: https://github.com/golang/exp/blob/master/shiny/driver/internal/win32
 
 var (
+	nidm                    sync.Mutex
 	g32                     = windows.NewLazySystemDLL("Gdi32.dll")
 	pCreateCompatibleBitmap = g32.NewProc("CreateCompatibleBitmap")
 	pCreateCompatibleDC     = g32.NewProc("CreateCompatibleDC")
@@ -117,12 +118,11 @@ type notifyIconData struct {
 	InfoFlags                  uint32
 	GuidItem                   windows.GUID
 	BalloonIcon                windows.Handle
-	m                          sync.Mutex
 }
 
 func (nid *notifyIconData) add() error {
-	nid.m.Lock()
-	defer nid.m.Unlock()
+	nidm.Lock()
+	defer nidm.Unlock()
 	const NIM_ADD = 0x00000000
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_ADD),
@@ -135,8 +135,8 @@ func (nid *notifyIconData) add() error {
 }
 
 func (nid *notifyIconData) modify() error {
-	nid.m.Lock()
-	defer nid.m.Unlock()
+	nidm.Lock()
+	defer nidm.Unlock()
 
 	const NIM_MODIFY = 0x00000001
 	res, _, err := pShellNotifyIcon.Call(
@@ -238,9 +238,10 @@ func (t *winTray) setTooltip(src string) error {
 
 func (t *winTray) setNotification(title, msg string) error {
 	const NIF_INFO = 0x00000010
-	t.nid.Flags = NIF_INFO
-	copy(t.nid.InfoTitle[:], syscall.StringToUTF16(title))
-	copy(t.nid.Info[:], syscall.StringToUTF16(msg))
+	t.nid.Flags |= NIF_INFO
+	copy(t.nid.InfoTitle[:], windows.StringToUTF16(title))
+	copy(t.nid.Info[:], windows.StringToUTF16(msg))
+	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
 	return t.nid.modify()
 }
 
@@ -911,6 +912,6 @@ func showMenu() {
 	wt.showMenu()
 }
 
-func showNotification(title, msg string) {
+func setNotification(title, msg string) {
 	wt.setNotification(title, msg)
 }

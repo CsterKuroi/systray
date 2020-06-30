@@ -103,5 +103,5 @@ func systray_menu_item_selected(cID C.int) {
 func showMenu() {
 }
 
-func showNotification(title, msg string) {
+func setNotification(title, msg string) {
 }

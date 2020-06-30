@@ -124,8 +124,8 @@ func AddSeparator() {
 	addSeparator(atomic.AddInt32(&currentID, 1))
 }
 
-func ShowNotification(title, msg string)  {
-	showNotification(title, msg)
+func SetNotification(title, msg string) {
+	setNotification(title, msg)
 }
 
 // AddSeparator as MenuItem
