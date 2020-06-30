@@ -11,6 +11,7 @@ import (
 	"sort"
 	"sync"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -242,6 +243,14 @@ func (t *winTray) setNotification(title, msg string) error {
 	copy(t.nid.InfoTitle[:], windows.StringToUTF16(title))
 	copy(t.nid.Info[:], windows.StringToUTF16(msg))
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
+	go func() {
+		time.Sleep(5 * time.Second)
+		t.nid.Flags |= 0x00000010
+		t.nid.InfoTitle = [64]uint16{}
+		t.nid.Info = [256]uint16{}
+		t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
+		t.nid.modify()
+	}()
 	return t.nid.modify()
 }
 
